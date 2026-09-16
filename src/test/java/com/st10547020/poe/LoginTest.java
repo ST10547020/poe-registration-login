@@ -51,4 +51,16 @@ public class LoginTest {
                 "Kyle", "Daniels");
         assertTrue(result.contains("Username is not correctly formatted"));
     }
+
+    @Test
+    public void testLoginSuccessful() {
+        login.registerUser("kyl_1", "Ch&&sec@ke99!", "+27838968976", "Kyle", "Daniels");
+        assertTrue(login.loginUser("kyl_1", "Ch&&sec@ke99!"));
+    }
+
+    @Test
+    public void testLoginFailed() {
+        login.registerUser("kyl_1", "Ch&&sec@ke99!", "+27838968976", "Kyle", "Daniels");
+        assertFalse(login.loginUser("kyl_1", "wrongPassword1!"));
+    }
 }

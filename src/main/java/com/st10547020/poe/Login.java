@@ -112,5 +112,34 @@ public class Login {
 
         return "Username successfully captured. Password successfully captured. "
                 + "Cell phone number successfully added.";
+    }
+
+    private boolean lastLoginSuccessful;
+
+    /**
+     * Verifies that the entered username and password match the
+     * details stored when the user registered.
+     *
+     * @param username the username entered at login
+     * @param password the password entered at login
+     * @return true if the credentials match, false otherwise
+     */
+    public boolean loginUser(String username, String password) {
+        lastLoginSuccessful = username != null && username.equals(storedUsername)
+                && password != null && password.equals(storedPassword);
+        return lastLoginSuccessful;
+    }
+
+    /**
+     * Returns the appropriate message for the outcome of the last login attempt.
+     *
+     * @return a welcome message on success, or a failure message otherwise
+     */
+    public String returnLoginStatus() {
+        if (lastLoginSuccessful) {
+            return "Welcome " + storedFirstName + ", " + storedLastName
+                    + " it is great to see you again.";
+        }
+        return "Username or password incorrect, please try again.";
     }        
 }
