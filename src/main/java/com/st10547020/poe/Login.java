@@ -19,6 +19,7 @@ public class Login {
         }
         return username.contains("_") && username.length() <= 5;
     }
+
     /**
      * Checks that the password meets the complexity rules:
      * at least eight characters, containing at least one
@@ -49,4 +50,21 @@ public class Login {
 
         return hasUpperCase && hasDigit && hasSpecialChar;
     }
+
+    /**
+     * Checks that the cell phone number contains the international
+     * country code and is no more than ten characters long.
+     * Regex pattern adapted from: Baeldung. (n.d.) Java Regex Validate Phone Numbers.
+     * Available at: https://www.baeldung.com/java-regex-validate-phone-numbers
+     * (Accessed: 16 September 2026).
+     *
+     * @param cellPhoneNumber the cell phone number to validate
+     * @return true if correctly formatted, false otherwise
+     */
+        public boolean checkCellPhoneNumber(String cellPhoneNumber) {
+        if (cellPhoneNumber == null) {
+            return false;
+        }
+        return cellPhoneNumber.matches("^\\+\\d{9,12}$");
+    }        
 }

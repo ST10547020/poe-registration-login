@@ -27,4 +27,14 @@ public class LoginTest {
     public void testPasswordDoesNotMeetComplexity() {
         assertFalse(login.checkPasswordComplexity("password"));
     }
+
+    @Test
+    public void testCellPhoneNumberCorrectlyFormatted() {
+        assertTrue(login.checkCellPhoneNumber("+27838968976"));
+    }
+
+    @Test
+    public void testCellPhoneNumberIncorrectlyFormatted() {
+        assertFalse(login.checkCellPhoneNumber("08966553"));
+    }
 }
