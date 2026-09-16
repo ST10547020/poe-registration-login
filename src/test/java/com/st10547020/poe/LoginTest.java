@@ -17,4 +17,14 @@ public class LoginTest {
     public void testUserNameIncorrectlyFormatted() {
         assertFalse(login.checkUserName("kyle!!!!!!"));
     }
+
+    @Test
+    public void testPasswordMeetsComplexity() {
+        assertTrue(login.checkPasswordComplexity("Ch&&sec@ke99!"));
+    }
+
+    @Test
+    public void testPasswordDoesNotMeetComplexity() {
+        assertFalse(login.checkPasswordComplexity("password"));
+    }
 }
