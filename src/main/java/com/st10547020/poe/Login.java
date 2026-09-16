@@ -66,5 +66,51 @@ public class Login {
             return false;
         }
         return cellPhoneNumber.matches("^\\+\\d{9,12}$");
+    }
+
+    private String storedUsername;
+    private String storedPassword;
+    private String storedCellPhoneNumber;
+    private String storedFirstName;
+    private String storedLastName;
+
+    /**
+     * Registers a new user by validating the username, password, and cell
+     * phone number, and returns the appropriate registration message.
+     *
+     * @param username the chosen username
+     * @param password the chosen password
+     * @param cellPhoneNumber the cell phone number
+     * @param firstName the user's first name
+     * @param lastName the user's last name
+     * @return a message indicating success or the specific validation error
+     */
+    public String registerUser(String username, String password, String cellPhoneNumber,
+                                String firstName, String lastName) {
+        if (!checkUserName(username)) {
+            return "Username is not correctly formatted; please ensure that your "
+                    + "username contains an underscore and is no more than five "
+                    + "characters in length.";
+        }
+
+        if (!checkPasswordComplexity(password)) {
+            return "Password is not correctly formatted; please ensure that the "
+                    + "password contains at least eight characters, a capital letter, "
+                    + "a number, and a special character.";
+        }
+
+        if (!checkCellPhoneNumber(cellPhoneNumber)) {
+            return "Cell number is incorrectly formatted or does not contain an "
+                    + "international code; please correct the number and try again.";
+        }
+
+        this.storedUsername = username;
+        this.storedPassword = password;
+        this.storedCellPhoneNumber = cellPhoneNumber;
+        this.storedFirstName = firstName;
+        this.storedLastName = lastName;
+
+        return "Username successfully captured. Password successfully captured. "
+                + "Cell phone number successfully added.";
     }        
 }

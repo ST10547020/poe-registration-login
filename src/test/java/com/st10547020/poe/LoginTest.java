@@ -37,4 +37,18 @@ public class LoginTest {
     public void testCellPhoneNumberIncorrectlyFormatted() {
         assertFalse(login.checkCellPhoneNumber("08966553"));
     }
+
+    @Test
+    public void testRegisterUserSuccess() {
+        String result = login.registerUser("kyl_1", "Ch&&sec@ke99!", "+27838968976",
+                "Kyle", "Daniels");
+        assertTrue(result.contains("successfully"));
+    }
+
+    @Test
+    public void testRegisterUserUsernameFailure() {
+        String result = login.registerUser("kyle", "Ch&&sec@ke99!", "+27838968976",
+                "Kyle", "Daniels");
+        assertTrue(result.contains("Username is not correctly formatted"));
+    }
 }
