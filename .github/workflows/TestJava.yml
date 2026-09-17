@@ -2,7 +2,7 @@ name: TestJava
 
 on:
   push:
-    branches: [ main, Part2Messages ]
+    branches: [ main, Part2Messages, Part3StoredMessages ]
   pull_request:
     branches: [ main ]
 
