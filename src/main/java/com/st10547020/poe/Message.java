@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONObject;
+
 /**
  * Represents a single chat message, including its ID, recipient,
  * content, hash, and sent/stored/discarded status.
@@ -20,6 +21,42 @@ public class Message {
     private String messageText;
     private String messageHash;
     private static int totalMessagesSent = 0;
+
+    private static List<Message> sentMessages = new ArrayList<>();
+    private static List<Message> disregardedMessages = new ArrayList<>();
+    private static List<Message> storedMessages = new ArrayList<>();
+    private static List<String> messageHashes = new ArrayList<>();
+    private static List<String> messageIDs = new ArrayList<>();
+
+    public String getMessageID() {
+        return messageID;
+    }
+
+    public String getRecipient() {
+        return recipient;
+    }
+
+    public String getMessageText() {
+        return messageText;
+    }
+
+    public String getMessageHash() {
+        return messageHash;
+    }
+
+    /**
+     * Clears all static arrays and counters. Intended for use between
+     * unit tests so that each test starts from a clean state.
+     */
+    public static void resetArrays() {
+        sentMessages.clear();
+        disregardedMessages.clear();
+        storedMessages.clear();
+        messageHashes.clear();
+        messageIDs.clear();
+        sentMessagesLog.clear();
+        totalMessagesSent = 0;
+    }
 
     /**
      * Generates a random ten-digit message ID.
@@ -109,15 +146,27 @@ public class Message {
      */
     public String SentMessage(String choice, String messageID, String recipient,
                                String messageHash, String messageText) {
+        Message m = new Message();
+        m.messageID = messageID;
+        m.recipient = recipient;
+        m.messageHash = messageHash;
+        m.messageText = messageText;
+
+        messageIDs.add(messageID);
+        messageHashes.add(messageHash);
+
         if (choice.equalsIgnoreCase("send")) {
             totalMessagesSent++;
+            sentMessages.add(m);
             sentMessagesLog.add("Message ID: " + messageID + ", Message Hash: " + messageHash
                     + ", Recipient: " + recipient + ", Message: " + messageText);
             return "Message successfully sent.";
         } else if (choice.equalsIgnoreCase("store")) {
+            storedMessages.add(m);
             storeMessage(messageID, recipient, messageHash, messageText);
             return "Message successfully stored.";
         } else if (choice.equalsIgnoreCase("disregard")) {
+            disregardedMessages.add(m);
             return "Press 0 to delete the message.";
         }
         return "Invalid choice.";
@@ -176,5 +225,154 @@ public class Message {
         } catch (IOException e) {
             System.out.println("Error storing message: " + e.getMessage());
         }
+    }
+
+    /**
+     * Reads all messages from the JSON file and populates the storedMessages array.
+     * Clears the array first so repeated calls do not duplicate entries.
+     * JSON handling adapted from: stleary. (n.d.) JSON in Java, GitHub repository.
+     * Available at: https://github.com/stleary/JSON-java (Accessed: 17 September 2026).
+     */
+    public void loadStoredMessages() {
+        storedMessages.clear();
+        try {
+            File file = new File("storedMessages.json");
+            if (!file.exists()) {
+                return;
+            }
+            String content = new String(Files.readAllBytes(file.toPath()));
+            if (content.isEmpty()) {
+                return;
+            }
+            JSONArray messagesArray = new JSONArray(content);
+            for (int i = 0; i < messagesArray.length(); i++) {
+                JSONObject obj = messagesArray.getJSONObject(i);
+                Message m = new Message();
+                m.messageID = obj.getString("messageID");
+                m.recipient = obj.getString("recipient");
+                m.messageHash = obj.getString("messageHash");
+                m.messageText = obj.getString("message");
+                storedMessages.add(m);
+            }
+        } catch (IOException e) {
+            System.out.println("Error loading stored messages: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Displays the recipient of every stored message.
+     *
+     * @return a formatted string listing the recipient of each stored message
+     */
+    public String displayStoredMessageRecipients() {
+        if (storedMessages.isEmpty()) {
+            return "No stored messages.";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (Message m : storedMessages) {
+            sb.append("Recipient: ").append(m.recipient).append("\n");
+        }
+        return sb.toString().trim();
+    }
+
+    /**
+     * Finds and displays the longest stored message.
+     *
+     * @return the text of the longest stored message
+     */
+    public String displayLongestStoredMessage() {
+        if (storedMessages.isEmpty()) {
+            return "No stored messages.";
+        }
+        Message longest = storedMessages.get(0);
+        for (Message m : storedMessages) {
+            if (m.messageText.length() > longest.messageText.length()) {
+                longest = m;
+            }
+        }
+        return longest.messageText;
+    }
+
+    /**
+     * Searches for a message by its message ID among stored and sent messages,
+     * and returns the recipient and message text.
+     *
+     * @param id the message ID to search for
+     * @return the recipient and message text, or a not-found message
+     */
+    public String searchByMessageID(String id) {
+        for (Message m : storedMessages) {
+            if (m.messageID.equals(id)) {
+                return m.recipient + m.messageText;
+            }
+        }
+        for (Message m : sentMessages) {
+            if (m.messageID.equals(id)) {
+                return m.recipient + m.messageText;
+            }
+        }
+        return "No message found with that ID.";
+    }
+
+    /**
+     * Searches for all messages, sent or stored, for a particular recipient.
+     *
+     * @param recipient the recipient's cell phone number
+     * @return a formatted string of all matching messages
+     */
+    public String searchByRecipient(String recipient) {
+        StringBuilder sb = new StringBuilder();
+        for (Message m : sentMessages) {
+            if (m.recipient.equals(recipient)) {
+                sb.append(m.messageText).append(" ");
+            }
+        }
+        for (Message m : storedMessages) {
+            if (m.recipient.equals(recipient)) {
+                sb.append(m.messageText).append(" ");
+            }
+        }
+        if (sb.length() == 0) {
+            return "No messages found for that recipient.";
+        }
+        return sb.toString().trim();
+    }
+
+    /**
+     * Deletes a stored message using its message hash.
+     *
+     * @param hash the message hash to search for and delete
+     * @return a confirmation message including the deleted message's text,
+     *         or a not-found message
+     */
+    public String deleteMessageByHash(String hash) {
+        for (int i = 0; i < storedMessages.size(); i++) {
+            Message m = storedMessages.get(i);
+            if (m.messageHash.equals(hash)) {
+                storedMessages.remove(i);
+                return "Message: \"" + m.messageText + "\" successfully deleted.";
+            }
+        }
+        return "No message found with that hash.";
+    }
+
+    /**
+     * Displays a report listing the message hash, recipient, and message
+     * text of every sent message.
+     *
+     * @return a formatted report of all sent messages
+     */
+    public String displayReport() {
+        if (sentMessages.isEmpty()) {
+            return "No sent messages.";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (Message m : sentMessages) {
+            sb.append("Message Hash: ").append(m.messageHash)
+              .append(", Recipient: ").append(m.recipient)
+              .append(", Message: ").append(m.messageText)
+              .append("\n");
+        }
+        return sb.toString().trim();
     }
 }
