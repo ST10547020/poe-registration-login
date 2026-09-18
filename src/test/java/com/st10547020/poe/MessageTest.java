@@ -114,7 +114,7 @@ public class MessageTest {
         String hash2 = message.createMessageHash("2222222222", 1, text2);
         String result = message.deleteMessageByHash(hash2);
         assertEquals("Message: \"Where are you? You are late! I have asked you to be on time.\" "
-                + "successfully deleted.", result);
+                + "has been successfully deleted.", result);
     }
 
     @Test

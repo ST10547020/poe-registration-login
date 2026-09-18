@@ -20,6 +20,8 @@ public class Message {
     private String recipient;
     private String messageText;
     private String messageHash;
+    private String sender;
+    private static String currentSender = "Unknown";
     private static int totalMessagesSent = 0;
 
     private static List<Message> sentMessages = new ArrayList<>();
@@ -27,6 +29,7 @@ public class Message {
     private static List<Message> storedMessages = new ArrayList<>();
     private static List<String> messageHashes = new ArrayList<>();
     private static List<String> messageIDs = new ArrayList<>();
+    private static List<String> sentMessagesLog = new ArrayList<>();
 
     public String getMessageID() {
         return messageID;
@@ -42,6 +45,16 @@ public class Message {
 
     public String getMessageHash() {
         return messageHash;
+    }
+
+    /**
+     * Sets the username of the currently logged-in user, used as the
+     * sender for all messages created afterwards.
+     *
+     * @param username the logged-in user's username
+     */
+    public static void setCurrentSender(String username) {
+        currentSender = username;
     }
 
     /**
@@ -131,8 +144,6 @@ public class Message {
         return hash.toUpperCase();
     }
 
-    private static List<String> sentMessagesLog = new ArrayList<>();
-
     /**
      * Allows the user to choose to send, store for later, or discard
      * the message.
@@ -151,6 +162,7 @@ public class Message {
         m.recipient = recipient;
         m.messageHash = messageHash;
         m.messageText = messageText;
+        m.sender = currentSender;
 
         messageIDs.add(messageID);
         messageHashes.add(messageHash);
@@ -208,6 +220,7 @@ public class Message {
             messageObject.put("recipient", recipient);
             messageObject.put("messageHash", messageHash);
             messageObject.put("message", messageText);
+            messageObject.put("sender", currentSender);
 
             File file = new File("storedMessages.json");
             JSONArray messagesArray;
@@ -252,6 +265,7 @@ public class Message {
                 m.recipient = obj.getString("recipient");
                 m.messageHash = obj.getString("messageHash");
                 m.messageText = obj.getString("message");
+                m.sender = obj.has("sender") ? obj.getString("sender") : "Unknown";
                 storedMessages.add(m);
             }
         } catch (IOException e) {
@@ -260,9 +274,9 @@ public class Message {
     }
 
     /**
-     * Displays the recipient of every stored message.
+     * Displays the sender and recipient of every stored message.
      *
-     * @return a formatted string listing the recipient of each stored message
+     * @return a formatted string listing the sender and recipient of each stored message
      */
     public String displayStoredMessageRecipients() {
         if (storedMessages.isEmpty()) {
@@ -270,7 +284,8 @@ public class Message {
         }
         StringBuilder sb = new StringBuilder();
         for (Message m : storedMessages) {
-            sb.append("Recipient: ").append(m.recipient).append("\n");
+            sb.append("Sender: ").append(m.sender)
+              .append(", Recipient: ").append(m.recipient).append("\n");
         }
         return sb.toString().trim();
     }
@@ -303,17 +318,23 @@ public class Message {
     public String searchByMessageID(String id) {
         for (Message m : storedMessages) {
             if (m.messageID.equals(id)) {
-                return m.recipient + m.messageText;
+                return formatRecipientAndMessage(m);
             }
         }
         for (Message m : sentMessages) {
             if (m.messageID.equals(id)) {
-                return m.recipient + m.messageText;
+                return formatRecipientAndMessage(m);
             }
         }
         return "No message found with that ID.";
     }
 
+private String formatRecipientAndMessage(Message m) {
+    if (m.recipient == null || m.recipient.isEmpty()) {
+        return m.messageText;
+    }
+    return m.recipient + " " + m.messageText;
+}
     /**
      * Searches for all messages, sent or stored, for a particular recipient.
      *
@@ -350,7 +371,7 @@ public class Message {
             Message m = storedMessages.get(i);
             if (m.messageHash.equals(hash)) {
                 storedMessages.remove(i);
-                return "Message: \"" + m.messageText + "\" successfully deleted.";
+                return "Message: \"" + m.messageText + "\" has been successfully deleted.";
             }
         }
         return "No message found with that hash.";

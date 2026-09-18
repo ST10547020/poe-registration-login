@@ -42,6 +42,8 @@ public class Main {
             return;
         }
 
+        Message.setCurrentSender(loginUsername);
+
         Message messageService = new Message();
         System.out.println();
         System.out.println("Welcome to QuickChat.");
