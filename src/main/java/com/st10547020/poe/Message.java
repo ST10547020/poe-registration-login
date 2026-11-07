@@ -97,8 +97,8 @@ public class Message {
     }
 
     /**
-     * Checks that the recipient cell number is no more than ten
-     * characters long and starts with an international country code.
+     * Checks that the recipient cell number starts with a plus sign and an
+     * international country code, followed by nine to twelve digits.
      *
      * @param recipientCell the recipient's cell phone number
      * @return a message indicating success or the specific validation error
@@ -329,12 +329,19 @@ public class Message {
         return "No message found with that ID.";
     }
 
-private String formatRecipientAndMessage(Message m) {
-    if (m.recipient == null || m.recipient.isEmpty()) {
-        return m.messageText;
+    /**
+     * Formats a message as its recipient followed by its text. If the
+     * recipient is empty, only the text is returned.
+     *
+     * @param m the message to format
+     * @return the formatted recipient and message text
+     */
+    private String formatRecipientAndMessage(Message m) {
+        if (m.recipient == null || m.recipient.isEmpty()) {
+            return m.messageText;
+        }
+        return m.recipient + " " + m.messageText;
     }
-    return m.recipient + " " + m.messageText;
-}
     /**
      * Searches for all messages, sent or stored, for a particular recipient.
      *
